@@ -9,6 +9,8 @@ class Schedule extends Model
 {
     protected $guarded = ['id'];
 
+    protected $with = ['shift', 'user', 'office'];
+
     public function shift():BelongsTo
     {
         return $this->belongsTo(Shift::class);
