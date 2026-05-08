@@ -9,7 +9,7 @@ Route::get('/', function () {
 });
 
 Route::get('/login', function () {
-    return view('dashboard.login');
+    return redirect('/dashboard/login');
     })->name('login');
     
 Route::get('/presensi', Presensi::class)->middleware('auth');
