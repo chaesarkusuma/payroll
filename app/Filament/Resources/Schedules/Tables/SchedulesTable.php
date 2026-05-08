@@ -9,6 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\BooleanColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class SchedulesTable
@@ -20,13 +21,17 @@ class SchedulesTable
                 TextColumn::make('user.name')
                     ->label('Nama Pegawai')
                     ->searchable(),
+
                 BooleanColumn::make('is_wfa')
                     ->label('WFA'),
                 TextColumn::make('shift.name')
-                    ->description(fn (Schedule $record) => $record->shift->start_time . ' - ' . $record->shift->end_time)
+                    ->description(fn (Schedule $schedule) => $schedule->shift?->start_time.' - '.$schedule->shift?->end_time)
                     ->searchable(),
                 TextColumn::make('office.name')
                     ->searchable(),
+                ToggleColumn::make('is_banned')
+                    ->label('Dilarang absen')
+                    ->sortable(),    
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Attendances\Tables;
 
+use App\Models\Attendance;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -54,6 +55,19 @@ class AttendancesTable
                     ->time()
                     ->label('Jam Keluar')
                     ->sortable(),
+                TextColumn::make('is_late')
+                    ->badge()
+                    ->label('Terlambat')
+                    ->getStateUsing(function ($record) {
+                        return $record->isLate() ? 'Terlambat' : 'Tepat Waktu';
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'Terlambat' => 'danger',
+                        'Tepat Waktu' => 'success',
+                    })
+                    ->description(function (Attendance $record) {
+                        return "Durasi". $record->workDuration();
+                    }),
             ])
             ->filters([
                 //

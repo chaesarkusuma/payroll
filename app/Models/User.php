@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
+use Override;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -20,6 +22,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $guarded = ['id'];
+    
 
     /**
      * The attributes that should be hidden for serialization.
@@ -42,5 +45,28 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+
+    
+    protected static function booted()
+    {
+        static::updating(function($user){
+            if ($user->isDirty('avatar')) {
+                $original = $user->getOriginal('avatar');
+
+                if ($original && Storage::disks('public')->exists($original)) {
+                    Storage:: disk('public')->delete($original);
+                }
+            }
+        });
+
+            static::deleting(function($user){
+                $avatar = $user->avatar;
+    
+                if ($avatar && Storage::disks('public')->exists($user->$avatar)) {
+                    Storage:: disk('public')->delete($avatar);
+                }
+            });
     }
 }

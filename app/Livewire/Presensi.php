@@ -4,8 +4,10 @@ namespace App\Livewire;
 
 use App\Models\Attendance;
 use App\Models\Schedule;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Illuminate\Support\Carbon;
 
 class Presensi extends Component
 {
@@ -13,27 +15,29 @@ class Presensi extends Component
     public $longitude;
     public $insideRadius = false;
 
-
     public function render()
     {
-        $schedule = Schedule::where('user_id', auth()->id())->first();
+        $schedule = Schedule::where('user_id', Auth::user()->id)->first();
         $insideRadius = $this->insideRadius;
-        $attendance = Attendance::where('user_id', Auth::id())->whereDate('created_at', now())->first();
+        $attendance = Attendance::where('user_id', Auth::user()->id)
+            ->whereDate('created_at', now())->first();
 
+        // return dd($attendance);
         return view('livewire.presensi', compact('schedule', 'insideRadius', 'attendance'))->layout('layouts.main');
     }
 
     public function store()
     {
         $this->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'latitude' => 'required',
+            'longitude' => 'required'
         ]);
 
-        $schedule = Schedule::where('user_id', Auth::id())->first();
+        $schedule = Schedule::where('user_id', Auth::user()->id)->first();
 
         if ($schedule) {
-            $attendance = Attendance::where('user_id', Auth::id())->whereDate('created_at', now())->first();
+            $attendance = Attendance::where('user_id', Auth::user()->id)
+                ->whereDate('created_at', now())->first();
 
             if (!$attendance) {
                 $attendance = Attendance::create([
@@ -44,22 +48,29 @@ class Presensi extends Component
                     'schedule_end_time' => $schedule->shift->end_time,
                     'latitude' => $this->latitude,
                     'longitude' => $this->longitude,
-                    'start_time' => now()->toTimeString(),
-                    'end_time' => now()->toTimeString(),
-                ]);  
+                    'start_time' => Carbon::now()->toTimeString(),
+                    'end_time' => Carbon::now()->toTimeString(),
+                ]);
+
+                Notification::make()
+                    ->title('Presensi berhasil')
+                    ->body('persensi berhasil.')
+                    ->success()
+                    ->send();
             } else {
                 $attendance->update([
                     'latitude' => $this->latitude,
                     'longitude' => $this->longitude,
-                    'end_time' => now()->toTimeString(),
+                    'end_time' => Carbon::now()->toTimeString(),
                 ]);
+                Notification::make()
+                    ->title('Presensi berhasil')
+                    ->body('presensi berhasil diupdate.')
+                    ->success()
+                    ->send();
             }
 
-
-            return redirect('/presensi', [
-                'schedule' => $schedule,
-                'insideRadius' => false
-            ]);
+            return redirect('/dashboard/attendances');
         }
     }
 }
