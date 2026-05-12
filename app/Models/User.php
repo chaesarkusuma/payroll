@@ -54,7 +54,6 @@ class User extends Authenticatable
         static::updating(function($user){
             if ($user->isDirty('avatar')) {
                 $original = $user->getOriginal('avatar');
-
                 if ($original && Storage::disks('public')->exists($original)) {
                     Storage:: disk('public')->delete($original);
                 }
@@ -62,8 +61,7 @@ class User extends Authenticatable
         });
 
             static::deleting(function($user){
-                $avatar = $user->avatar;
-    
+                $avatar = $user->avatar;    
                 if ($avatar && Storage::disks('public')->exists($user->$avatar)) {
                     Storage:: disk('public')->delete($avatar);
                 }
