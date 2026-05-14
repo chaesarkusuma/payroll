@@ -17,7 +17,7 @@ class Attendance extends Model
     }
 
 
-    public function isLate() 
+    public function isLate()
     {
         $scheduleStartTime = Carbon::parse($this->schedule_start_time);
         $startTime = Carbon::parse($this->start_time);
@@ -36,5 +36,24 @@ class Attendance extends Model
         $minutes = $duration->i;
 
         return $hours . ' jam ' . $minutes . ' menit';
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function ($attendance) {
+            if ($attendance->start_time && $attendance->end_time) {
+
+                $start = Carbon::parse($attendance->start_time);
+                $end = Carbon::parse($attendance->end_time);
+
+                if ($end->lessThan($start)) {
+                    $end->addDay();
+                }
+
+                $totalSeconds = $start->diffInSeconds($end);
+
+                $attendance->duration = gmdate('H:i:s', $totalSeconds);
+            }
+        });
     }
 }
